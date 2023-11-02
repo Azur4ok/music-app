@@ -101,9 +101,8 @@
 </template>
 
 <script>
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
-import { collection, addDoc } from 'firebase/firestore'
-import { app, db } from '@/includes/firebase'
+import { mapActions } from 'pinia'
+import useUserStore from '@/stores/user'
 
 export default {
   name: 'RegisterForm',
@@ -125,29 +124,20 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useUserStore, {
+      createUser: 'register'
+    }),
     async register(values) {
-      let user = null
-      const auth = getAuth(app)
       try {
         this.reg_show_alert = true
         this.reg_in_submission = true
         this.reg_alert_variant = 'bg-blue-500'
         this.reg_alert_msg = 'Please wait! Your account is being created.'
-
-        user = user = await createUserWithEmailAndPassword(auth, values.email, values.password)
-        console.log(user)
-
-        const docRef = await addDoc(collection(db, 'users'), {
-          name: values.name,
-          email: values.email,
-          age: values.age,
-          country: values.country
-        })
-
-        console.log('Document written with ID: ', docRef)
+        await this.createUser(values)
 
         this.reg_alert_variant = 'bg-green-500'
         this.reg_alert_msg = 'Success! Your account has been created!'
+        window.location.reload()
       } catch (error) {
         console.log(error)
         this.reg_in_submission = false
